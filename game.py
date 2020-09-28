@@ -132,6 +132,7 @@ pygame.time.set_timer(ENEMYSPEED, 10000)
 
 # Instantiate player. Right now, this is just a rectangle.
 player = Player()
+playerscore = 0
 
 # Create groups to hold enemy sprites and all sprites
 # - enemies is used for collision detection and position updates
@@ -169,9 +170,10 @@ while running:
             new_enemy = Enemy()
             enemies.add(new_enemy)
             all_sprites.add(new_enemy)
-            #Setting enemy speed after every 10 seconds
+            #Setting enemy speed after every 10 seconds, and player score every 10 seconds
         elif event.type == ENEMYSPEED:
             enemyspeed += 10
+            playerscore += 1
         # Add a new cloud?
         elif event.type == ADDCLOUD:
             # Create the new cloud and add it to sprite groups
@@ -189,9 +191,11 @@ while running:
     screen.fill((135, 206, 250))
     # Draw surf at the new coordinates
     # Draw all sprites
-    seconds=(pygame.time.get_ticks()-start_ticks)/1000
-    message = 'Timer: ' + str(seconds)
-    screen.blit(font.render(message, True, boja), (20, 20))
+    seconds = (pygame.time.get_ticks()-start_ticks)/1000
+    timer = 'Timer: ' + str(seconds)
+    screen.blit(font.render(timer, True, boja), (20, 20))
+    score = 'Score: ' + str(playerscore)
+    screen.blit(font.render(score, True, boja), (20, 40))
     for entity in all_sprites:
         screen.blit(entity.surf, entity.rect)
 
