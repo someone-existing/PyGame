@@ -1,9 +1,9 @@
 # Import random for random numbers
 import random
 
+import time
 # Import the pygame module
 import pygame
-
 # Import pygame.locals for easier access to key coordinates
 # Updated to conform to flake8 and black standards
 from pygame.locals import (
@@ -18,6 +18,7 @@ from pygame.locals import (
 )
 
 # Initialize pygame
+pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
 
 
@@ -27,12 +28,12 @@ pygame.mixer.music.play(loops=-1)
 move_up_sound = pygame.mixer.Sound("Rising_putter.ogg")
 move_down_sound = pygame.mixer.Sound("Falling_putter.ogg")
 collision_sound = pygame.mixer.Sound("Collision.ogg")
-power_sound = pygame.mixer.Sound("power.ogg")
+power_sound = pygame.mixer.Sound("Power.ogg")
 
 move_up_sound.set_volume(0.5)
 move_down_sound.set_volume(0.5)
 collision_sound.set_volume(0.5)
-power_sound.set_volume(0.5)
+power_sound.set_volume(0.85)
 start_ticks=pygame.time.get_ticks()
 font = pygame.font.SysFont("Arial", 20)
 boja = (0, 0, 0)
@@ -120,21 +121,19 @@ class SuperPower(pygame.sprite.Sprite):
         super(SuperPower, self).__init__()
         self.surf = pygame.image.load("power.png").convert()
         self.surf.set_colorkey((0, 0, 0), RLEACCEL)
-        # The starting position is randomly generated
         self.rect = self.surf.get_rect(
             center=(
-                random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
+                random.randint(SCREEN_WIDTH + 10, SCREEN_WIDTH + 20),
                 random.randint(0, SCREEN_HEIGHT),
             )
         )
 
-    # Move the cloud based on a constant speed
-    # Remove the cloud when it passes the left edge of the screen
+    # Move the sprite based on speed
+    # Remove the sprite when it passes the left edge of the screen
     def update(self):
-        self.rect.move_ip(-5, 0)
+        self.rect.move_ip(-3, 0)
         if self.rect.right < 0:
-            self.kill()
-
+            self.kill() 
 # Define constants for the screen width and height
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -154,12 +153,12 @@ ENEMYSPEED = pygame.USEREVENT + 3
 pygame.time.set_timer(ENEMYSPEED, 10000)
 
 SUPERPOWER = pygame.USEREVENT + 4
-pygame.time.set_timer(SUPERPOWER, 25000)
+pygame.time.set_timer(SUPERPOWER, 5000)
 
 # Instantiate player. Right now, this is just a rectangle.
 player = Player()
 playerscore = 0
-superpower = 0
+superpowertimer = 0
 
 # Create groups to hold enemy sprites and all sprites
 # - enemies is used for collision detection and position updates
@@ -210,7 +209,7 @@ while running:
             all_sprites.add(new_cloud)
         elif event.type == SUPERPOWER:
             new_power = SuperPower()
-            power.add(new_power)
+            superpowers.add(new_power)
             all_sprites.add(new_power)
         # Get all the keys currently pressed
     pressed_keys = pygame.key.get_pressed()
@@ -233,13 +232,14 @@ while running:
 
     # Check if any enemies have collided with the player
     if pygame.sprite.spritecollideany(player, superpowers):
-        superpower = 1
+        superpowertimer = pygame.time.get_ticks()
         power_sound.play()
+        new_power.kill()
+    if superpowertimer > 10000:
+        superpowertimer = 0
     if pygame.sprite.spritecollideany(player, enemies):
         # If so, then remove the player and stop the loop
-        if superpower == 1:
-            print("INVINCIBLE FOR 10 SECS")
-        elif superpower == 0:
+        if superpowertimer == 0:
             player.kill()
 
             move_up_sound.stop()
