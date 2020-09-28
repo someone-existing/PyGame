@@ -301,7 +301,7 @@ def game():
             power_sound.play()
             t = threading.Timer(5.0, superpowerdef)
             t.start()
-        if superpowertimer == 0:
+        if superpowertimer == 1:
             draw_text('Super power expiring in 5 seconds!!', gamefont, (255, 0, 0), screen, 20, 85)
         if pygame.sprite.spritecollideany(player, enemies):
             # If so, then remove the player and stop the loop
