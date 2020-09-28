@@ -1,6 +1,7 @@
 # Import random for random numbers
 import random
 
+import threading
 import time
 # Import the pygame module
 import pygame
@@ -33,11 +34,11 @@ power_sound = pygame.mixer.Sound("Power.ogg")
 move_up_sound.set_volume(0.5)
 move_down_sound.set_volume(0.5)
 collision_sound.set_volume(0.5)
-power_sound.set_volume(0.85)
+power_sound.set_volume(1)
 start_ticks=pygame.time.get_ticks()
 font = pygame.font.SysFont("Arial", 20)
 boja = (0, 0, 0)
-enemyspeed = 5
+enemyspeed = 8
 # Define a Player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
 class Player(pygame.sprite.Sprite):
@@ -123,7 +124,7 @@ class SuperPower(pygame.sprite.Sprite):
         self.surf.set_colorkey((0, 0, 0), RLEACCEL)
         self.rect = self.surf.get_rect(
             center=(
-                random.randint(SCREEN_WIDTH + 10, SCREEN_WIDTH + 20),
+                random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
                 random.randint(0, SCREEN_HEIGHT),
             )
         )
@@ -131,7 +132,7 @@ class SuperPower(pygame.sprite.Sprite):
     # Move the sprite based on speed
     # Remove the sprite when it passes the left edge of the screen
     def update(self):
-        self.rect.move_ip(-3, 0)
+        self.rect.move_ip(-5, 0)
         if self.rect.right < 0:
             self.kill() 
 # Define constants for the screen width and height
@@ -144,7 +145,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Create a custom event for adding a new enemy
 ADDENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(ADDENEMY, 250)
+pygame.time.set_timer(ADDENEMY, 175)
 
 ADDCLOUD = pygame.USEREVENT + 2
 pygame.time.set_timer(ADDCLOUD, 1000)
@@ -153,7 +154,7 @@ ENEMYSPEED = pygame.USEREVENT + 3
 pygame.time.set_timer(ENEMYSPEED, 10000)
 
 SUPERPOWER = pygame.USEREVENT + 4
-pygame.time.set_timer(SUPERPOWER, 5000)
+pygame.time.set_timer(SUPERPOWER, random.randint(8500, 45000))
 
 # Instantiate player. Right now, this is just a rectangle.
 player = Player()
@@ -168,6 +169,11 @@ clouds = pygame.sprite.Group()
 superpowers = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
+
+
+def superpowerdef():
+    global superpowertimer
+    superpowertimer = 0
 
 
 # Setup the clock for a decent framerate
@@ -199,7 +205,7 @@ while running:
             all_sprites.add(new_enemy)
             #Setting enemy speed after every 10 seconds, and player score every 10 seconds
         elif event.type == ENEMYSPEED:
-            enemyspeed += 10
+            enemyspeed += random.randint(0, 7)
             playerscore += 1
         # Add a new cloud?
         elif event.type == ADDCLOUD:
@@ -232,11 +238,11 @@ while running:
 
     # Check if any enemies have collided with the player
     if pygame.sprite.spritecollideany(player, superpowers):
-        superpowertimer = pygame.time.get_ticks()
-        power_sound.play()
+        superpowertimer = 1
         new_power.kill()
-    if superpowertimer > 10000:
-        superpowertimer = 0
+        power_sound.play()
+        t = threading.Timer(5.0, superpowerdef)
+        t.start()
     if pygame.sprite.spritecollideany(player, enemies):
         # If so, then remove the player and stop the loop
         if superpowertimer == 0:
@@ -254,7 +260,6 @@ while running:
     pygame.display.flip()
     # Ensure program maintains a rate of 30 frames per second
     clock.tick(60)
-
 # while collChannel.get_busy():
 #     pygame.time.wait(100)
 
