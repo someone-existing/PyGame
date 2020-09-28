@@ -27,10 +27,12 @@ pygame.mixer.music.play(loops=-1)
 move_up_sound = pygame.mixer.Sound("Rising_putter.ogg")
 move_down_sound = pygame.mixer.Sound("Falling_putter.ogg")
 collision_sound = pygame.mixer.Sound("Collision.ogg")
+power_sound = pygame.mixer.Sound("power.ogg")
 
 move_up_sound.set_volume(0.5)
 move_down_sound.set_volume(0.5)
 collision_sound.set_volume(0.5)
+power_sound.set_volume(0.5)
 start_ticks=pygame.time.get_ticks()
 font = pygame.font.SysFont("Arial", 20)
 boja = (0, 0, 0)
@@ -111,6 +113,27 @@ class Cloud(pygame.sprite.Sprite):
         self.rect.move_ip(-5, 0)
         if self.rect.right < 0:
             self.kill()
+# Define the cloud object by extending pygame.sprite.Sprite
+# Use an image for a better-looking sprite
+class SuperPower(pygame.sprite.Sprite):
+    def __init__(self):
+        super(SuperPower, self).__init__()
+        self.surf = pygame.image.load("power.png").convert()
+        self.surf.set_colorkey((0, 0, 0), RLEACCEL)
+        # The starting position is randomly generated
+        self.rect = self.surf.get_rect(
+            center=(
+                random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
+                random.randint(0, SCREEN_HEIGHT),
+            )
+        )
+
+    # Move the cloud based on a constant speed
+    # Remove the cloud when it passes the left edge of the screen
+    def update(self):
+        self.rect.move_ip(-5, 0)
+        if self.rect.right < 0:
+            self.kill()
 
 # Define constants for the screen width and height
 SCREEN_WIDTH = 800
@@ -130,15 +153,20 @@ pygame.time.set_timer(ADDCLOUD, 1000)
 ENEMYSPEED = pygame.USEREVENT + 3
 pygame.time.set_timer(ENEMYSPEED, 10000)
 
+SUPERPOWER = pygame.USEREVENT + 4
+pygame.time.set_timer(SUPERPOWER, 25000)
+
 # Instantiate player. Right now, this is just a rectangle.
 player = Player()
 playerscore = 0
+superpower = 0
 
 # Create groups to hold enemy sprites and all sprites
 # - enemies is used for collision detection and position updates
 # - all_sprites is used for rendering
 enemies = pygame.sprite.Group()
 clouds = pygame.sprite.Group()
+superpowers = pygame.sprite.Group()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 
@@ -180,13 +208,17 @@ while running:
             new_cloud = Cloud()
             clouds.add(new_cloud)
             all_sprites.add(new_cloud)
-
+        elif event.type == SUPERPOWER:
+            new_power = SuperPower()
+            power.add(new_power)
+            all_sprites.add(new_power)
         # Get all the keys currently pressed
     pressed_keys = pygame.key.get_pressed()
     # Update the player sprite based on user keypresses
     player.update(pressed_keys)
     enemies.update()
     clouds.update()
+    superpowers.update()
     # Fill the screen with sky blue
     screen.fill((135, 206, 250))
     # Draw surf at the new coordinates
@@ -200,17 +232,24 @@ while running:
         screen.blit(entity.surf, entity.rect)
 
     # Check if any enemies have collided with the player
+    if pygame.sprite.spritecollideany(player, superpowers):
+        superpower = 1
+        power_sound.play()
     if pygame.sprite.spritecollideany(player, enemies):
         # If so, then remove the player and stop the loop
-        player.kill()
+        if superpower == 1:
+            print("INVINCIBLE FOR 10 SECS")
+        elif superpower == 0:
+            player.kill()
 
-        move_up_sound.stop()
-        move_down_sound.stop()
-        collision_sound.play()
-        print("Time alive", seconds, "seconds")
-        # collChannel = collision_sound.play()
-        
-        running = False
+            move_up_sound.stop()
+            move_down_sound.stop()
+            collision_sound.play()
+            print("Time alive", seconds, "seconds")
+            print("Your score was", playerscore, "!")
+            # collChannel = collision_sound.play()
+            
+            running = False
         
     pygame.display.flip()
     # Ensure program maintains a rate of 30 frames per second
