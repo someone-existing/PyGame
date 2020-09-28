@@ -246,11 +246,11 @@ while running:
     if pygame.sprite.spritecollideany(player, enemies):
         # If so, then remove the player and stop the loop
         if superpowertimer == 0:
+            collision_sound.play()
             player.kill()
 
             move_up_sound.stop()
             move_down_sound.stop()
-            collision_sound.play()
             print("Time alive", seconds, "seconds")
             print("Your score was", playerscore, "!")
             # collChannel = collision_sound.play()
