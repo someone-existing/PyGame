@@ -25,6 +25,7 @@ death_sound.set_volume(0.5)
 power_sound.set_volume(1)
 font = pygame.font.SysFont("Comic Sans", 50)
 gamefont = pygame.font.SysFont("Arial", 30)
+htpfont = pygame.font.SysFont("Comic Sans", 35)
 boja = (0, 0, 0)
 # Define a Player object by extending pygame.sprite.Sprite
 # The surface drawn on the screen is now an attribute of 'player'
@@ -47,7 +48,9 @@ def draw_text(text, font, color, surface, x, y):
     textrect.topleft = (x, y)
     surface.blit(textobj, textrect)
 
- 
+
+pygame.mixer.music.load("main_menu.mp3")
+pygame.mixer.music.play(loops=-1) 
 def main_menu():
     click = False
     while True:
@@ -62,20 +65,29 @@ def main_menu():
  
         button_1 = pygame.Rect(302, 102, 200, 50)
         button_2 = pygame.Rect(302, 202, 200, 50)
+        button_3 = pygame.Rect(302, 302, 200, 50)
         outline_1 = pygame.Rect(300, 100, 205, 55)
         outline_2 = pygame.Rect(300, 200, 205, 55)
+        outline_3 = pygame.Rect(300, 300, 205, 55)
         if button_1.collidepoint((mx, my)):
             if click:
+                pygame.mixer.music.stop()
                 game()
         if button_2.collidepoint((mx, my)):
             if click:
                 quit()
+        if button_3.collidepoint((mx, my)):
+            if click:
+                how_to_play()
         pygame.draw.rect(screen, (255, 255, 255), outline_1)
         pygame.draw.rect(screen, (255, 255, 255), outline_2)
+        pygame.draw.rect(screen, (255, 255, 255), outline_3)
         pygame.draw.rect(screen, (255, 0, 0), button_1)
         pygame.draw.rect(screen, (255, 0, 0), button_2)
+        pygame.draw.rect(screen, (255, 0, 0), button_3)
         draw_text('Play', font, (255, 255, 255), screen, 365, 110)
         draw_text('Quit', font, (255, 255, 255), screen, 365, 210)
+        draw_text('How to play', font, (255, 255, 255), screen, 305, 310)
  
  
         click = False
@@ -87,6 +99,59 @@ def main_menu():
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+ 
+        pygame.display.update()
+        clock.tick(60)
+def how_to_play():
+    click = False
+    while True:
+        white = (255,255,255)
+        black = (0,0,0)
+        bg = pygame.image.load("bg.jpg")
+        bg = pygame.transform.scale(bg, (800, 600))
+        jet = pygame.image.load("jet.png").convert()
+        sp = pygame.image.load("power.png").convert()
+        enpic = pygame.image.load("missile.png").convert()
+        enpic.set_colorkey(white)
+        sp.set_colorkey(black)
+        jet.set_colorkey(white)
+        screen.blit(bg, (0,0))
+        screen.blit(jet, (20,270))
+        screen.blit(sp, (10, 70))
+        screen.blit(enpic, (55, 200))
+        screen.blit(enpic, (55, 190))
+        screen.blit(enpic, (35, 190))
+        screen.blit(enpic, (55, 180))
+        draw_text('How to play?', font, (255, 255, 255), screen, 308, 20)
+        draw_text('= Super Power - Gives you 5 seconds invincibility', htpfont, (255, 255, 255), screen, 90, 90)
+        draw_text('= Missiles - Avoid them and collect points 10 sec = 1 point', htpfont, (255, 255, 255), screen, 90, 180)
+        draw_text('= Player - You control it with arrow keys on your keyboard', htpfont, (255, 255, 255), screen, 90, 270)
+ 
+        mx, my = pygame.mouse.get_pos()
+
+ 
+        back_1 = pygame.Rect(302, 402, 200, 50)
+        outlineback_1 = pygame.Rect(300, 400, 205, 55)
+        if back_1.collidepoint((mx, my)):
+            if click:
+                main_menu()
+        pygame.draw.rect(screen, (255, 255, 255), outlineback_1)
+        pygame.draw.rect(screen, (255, 0, 0), back_1)
+        draw_text('Back', font, (255, 255, 255), screen, 365, 410)
+
+ 
+ 
+        click = False
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    main_menu()
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     click = True
@@ -245,15 +310,13 @@ def game():
                     pygame.mixer.music.stop()
                     running = False
                     main_menu()
+                    pygame.mixer.music.load("main_menu.mp3")
+                    pygame.mixer.music.play(loops=-1) 
 
             # Did the user click the window close button? If so, stop the loop.
             elif event.type == QUIT:
-                    player.kill()
-                    move_up_sound.stop()
-                    move_down_sound.stop()
-                    pygame.mixer.music.stop()
-                    running = False
-                    main_menu()
+                pygame.quit()
+                sys.exit()
             # Add a new enemy?
             elif event.type == ADDENEMY:
                 # Create the new enemy and add it to sprite groups
@@ -306,6 +369,8 @@ def game():
         if pygame.sprite.spritecollideany(player, enemies):
             # If so, then remove the player and stop the loop
             if superpowertimer == 0:
+#                lastscore = playerscore
+ #               lasttime = seconds
                 death_sound.play()
                 player.kill()
 
@@ -318,8 +383,9 @@ def game():
                 
                 running = False
                 main_menu()
+                pygame.mixer.music.load("main_menu.mp3")
+                pygame.mixer.music.play(loops=-1) 
 
-            
         pygame.display.update()
         # Ensure program maintains a rate of 30 frames per second
         clock.tick(60)
