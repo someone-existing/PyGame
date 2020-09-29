@@ -272,7 +272,7 @@ def game():
     pygame.time.set_timer(ENEMYSPEED, 10000)
 
     SUPERPOWER = pygame.USEREVENT + 4
-    pygame.time.set_timer(SUPERPOWER, 3000) #random.randint(8500, 45000)
+    pygame.time.set_timer(SUPERPOWER, random.randint(8500, 45000)) 
 
     # Instantiate player. Right now, this is just a rectangle.
     player = Player()
