@@ -262,7 +262,6 @@ def game():
     def superpowerdef():
         global superpowertimer
         superpowertimer = 0
-        superactive = "NOT ACTIVE"
     ADDENEMY = pygame.USEREVENT + 1
     pygame.time.set_timer(ADDENEMY, 165)
 
@@ -292,7 +291,7 @@ def game():
     global superpowertimer
     superpowertimer = 0
     global superactive
-    superactive = "NOT ACTIVE"
+    superactive = "NOT ACTIVATED"
     running = True
     pygame.mixer.music.load("Apoxode_-_Electric_1.mp3")
     pygame.mixer.music.play(loops=-1)
@@ -360,7 +359,7 @@ def game():
         score = 'Score: ' + str(playerscore)
         screen.blit(gamefont.render(score, True, boja), (20, 45))
         supertext = "Super Power: " + str(superactive)
-        screen.blit(gamefont.render(supertext, True, boja), (20,75))
+        screen.blit(gamefont.render(supertext, True, boja), (20,85))
         # Check if any enemies have collided with the player
         if pygame.sprite.spritecollideany(player, superpowers):
             superpowertimer = 1
@@ -369,7 +368,9 @@ def game():
             t = threading.Timer(5.0, superpowerdef)
             t.start()
         if superpowertimer == 1:
-                    superactive = "ACTIVE"
+                    superactive = "ACTIVATED"
+        else:
+            superactive = "NOT ACTIVATED"
         if pygame.sprite.spritecollideany(player, enemies):
             # If so, then remove the player and stop the loop
             if superpowertimer == 0:
